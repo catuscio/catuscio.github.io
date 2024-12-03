@@ -26,7 +26,7 @@ baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://catuscio.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: jekyllrb
 github_username:  catuscio
-logo: "C:/Projects/blog/catuscio.github.io/_site/includes/logo.jpg"
+logo: "G:/Projects/blog/catuscio.github.io/_site/assets/images/logo.jpg"
 #custom settings
 lang: en
 timezone: Asia/Seoul
