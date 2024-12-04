@@ -26,16 +26,20 @@ baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://catuscio.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: jekyllrb
 github_username:  catuscio
-logo: "G:/Projects/blog/catuscio.github.io/_site/assets/images/logo.jpg"
+logo: "/assets/images/logo.jpg"
 #custom settings
 lang: en
 timezone: Asia/Seoul
+author:
+  name: Gyumin Choi
+  picture: "/assets/images/logo.jpg"
 
 # Build settings
 #theme: minima
 remote_theme: "mmistakes/jekyll-theme-basically-basic@1.4.5"
 plugins:
   - jekyll-feed
+  - jekyll-remote-theme
 
 # Exclude from processing.
 # The following items will not be processed, by default.
