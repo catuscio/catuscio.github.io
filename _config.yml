@@ -28,7 +28,7 @@ twitter_username: jekyllrb
 github_username:  catuscio
 logo: "/assets/images/logo.jpg"
 #custom settings
-lang: en
+lang: ko
 timezone: Asia/Seoul
 author:
   name: Gyumin Choi
