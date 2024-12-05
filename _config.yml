@@ -48,6 +48,9 @@ search: true
 # navigation:
 #   - title: About
 #     url: /about/
+markdown: kramdown
+kramdown:
+  math_engine: mathjax
 
 # Build settings
 #theme: minima

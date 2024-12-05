@@ -54,9 +54,11 @@ class NotionToJekyll:
                 text = f"### {self.convert_rich_text(block['heading_3']['rich_text'])}\n\n"
 
             elif block_type == "bulleted_list_item":
-                indent = "  " * block.get("indent", 0)  # 중첩 리스트 지원
-                text = f"{indent}- {self.convert_rich_text(block['bulleted_list_item']['rich_text'])}\n"
-
+                # 들여쓰기 레벨에 따라 공백 추가
+                indent = "    " * block.get("indent", 0)  # 4칸 들여쓰기
+                content = self.convert_rich_text(block['bulleted_list_item']['rich_text'])
+                text = f"{indent}- {content}\n"
+            
             elif block_type == "numbered_list_item":
                 indent = "  " * block.get("indent", 0)  # 중첩 리스트 지원
                 text = f"{indent}1. {self.convert_rich_text(block['numbered_list_item']['rich_text'])}\n"
@@ -67,17 +69,16 @@ class NotionToJekyll:
                 text = f"```{language}\n{code}\n```\n\n"
 
             elif block_type == "equation":
-                expr = block['equation']['expression'].replace('\\', '\\\\')
+                expr = block['equation']['expression']
                 text = f"$${expr}$$\n\n"
 
             elif block_type == "quote":
                 text = f"> {self.convert_rich_text(block['quote']['rich_text'])}\n\n"
 
             elif block_type == "callout":
-                icon = block["callout"].get("icon", {})
-                emoji = icon.get("emoji", "💡") if icon else "💡"
+                emoji = block["callout"].get("icon", {}).get("emoji", "💡")
                 callout_text = self.convert_rich_text(block["callout"]["rich_text"])
-                text = f"<div class='notice notice--info' markdown='1'>\n{emoji} {callout_text}\n</div>\n\n"
+                text = f"<div class='notice--info' markdown='1'>\n{emoji} {callout_text}\n</div>\n\n"
 
             elif block_type == "image":
                 if block["image"]["type"] == "external":
@@ -113,16 +114,20 @@ class NotionToJekyll:
             content = rt["plain_text"]
             annotations = rt.get("annotations", {})
 
-            if annotations.get("bold"):
-                content = f"**{content}**"
-            if annotations.get("italic"):
-                content = f"*{content}*"
-            if annotations.get("strikethrough"):
-                content = f"~~{content}~~"
-            if annotations.get("code"):
-                content = f"`{content}`"
-            if annotations.get("underline"):
-                content = f"<u>{content}</u>"
+            # 수식 처리
+            if rt.get("type") == "equation":
+                content = f"${content}$"
+            else:
+                if annotations.get("bold"):
+                    content = f"**{content}**"
+                if annotations.get("italic"):
+                    content = f"*{content}*"
+                if annotations.get("strikethrough"):
+                    content = f"~~{content}~~"
+                if annotations.get("code"):
+                    content = f"`{content}`"
+                if annotations.get("underline"):
+                    content = f"<u>{content}</u>"
 
             text += content
 
