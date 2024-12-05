@@ -38,70 +38,82 @@ class NotionToJekyll:
         """노션 블록을 마크다운으로 변환"""
         block_type = block["type"]
         text = ""
-
+    
         try:
             if block_type == "paragraph":
                 content = self.convert_rich_text(block["paragraph"]["rich_text"])
                 text = f"{content}\n\n" if content else "\n"
-
+    
             elif block_type == "heading_1":
                 text = f"# {self.convert_rich_text(block['heading_1']['rich_text'])}\n\n"
-
+    
             elif block_type == "heading_2":
                 text = f"## {self.convert_rich_text(block['heading_2']['rich_text'])}\n\n"
-
+    
             elif block_type == "heading_3":
                 text = f"### {self.convert_rich_text(block['heading_3']['rich_text'])}\n\n"
-
+    
             elif block_type == "bulleted_list_item":
-                # 들여쓰기 레벨에 따라 공백 추가
-                indent = "    " * block.get("indent", 0)  # 4칸 들여쓰기
+                indent = "    " * block.get("indent", 0)
                 content = self.convert_rich_text(block['bulleted_list_item']['rich_text'])
                 text = f"{indent}- {content}\n"
-            
+                
+                # 중첩된 리스트 처리
+                if "has_children" in block and block["has_children"]:
+                    children = self.notion.blocks.children.list(block["id"])
+                    for child in children["results"]:
+                        text += self.convert_block_to_markdown(child)
+    
             elif block_type == "numbered_list_item":
-                indent = "  " * block.get("indent", 0)  # 중첩 리스트 지원
-                text = f"{indent}1. {self.convert_rich_text(block['numbered_list_item']['rich_text'])}\n"
-
+                indent = "    " * block.get("indent", 0)
+                content = self.convert_rich_text(block['numbered_list_item']['rich_text'])
+                text = f"{indent}1. {content}\n"
+                
+                # 중첩된 리스트 처리
+                if "has_children" in block and block["has_children"]:
+                    children = self.notion.blocks.children.list(block["id"])
+                    for child in children["results"]:
+                        text += self.convert_block_to_markdown(child)
+    
             elif block_type == "code":
                 language = block["code"]["language"]
                 code = self.convert_rich_text(block["code"]["rich_text"])
                 text = f"```{language}\n{code}\n```\n\n"
-
+    
             elif block_type == "equation":
-                expr = block['equation']['expression']
-                text = f"$${expr}$$\n\n"
-
+                expr = block['equation']['expression'].replace('\\', '\\\\')
+                text = f"\\[{expr}\\]\n\n"
+    
             elif block_type == "quote":
                 text = f"> {self.convert_rich_text(block['quote']['rich_text'])}\n\n"
-
+    
             elif block_type == "callout":
                 emoji = block["callout"].get("icon", {}).get("emoji", "💡")
                 callout_text = self.convert_rich_text(block["callout"]["rich_text"])
                 text = f"<div class='notice--info' markdown='1'>\n{emoji} {callout_text}\n</div>\n\n"
-
+    
             elif block_type == "image":
                 if block["image"]["type"] == "external":
                     url = block["image"]["external"]["url"]
                 else:
                     url = block["image"]["file"]["url"]
-
+    
                 caption = ""
                 if "caption" in block["image"] and block["image"]["caption"]:
                     caption = self.convert_rich_text(block["image"]["caption"])
-
+    
                 image_path = self.download_image(url, self.current_page_title)
                 if image_path:
                     text = f"![{caption}]({image_path})\n\n"
-
+    
             else:
                 print(f"Unhandled block type: {block_type}")
                 text = "\n"
-
+    
         except Exception as e:
             print(f"Error processing block type {block_type}: {str(e)}")
             text = "\n"
-
+    
         return text
 
     def convert_rich_text(self, rich_text):
