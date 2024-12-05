@@ -1,8 +1,9 @@
 ---
 categories:
-- 개발
+- Studies
 date: '2024-12-05'
-tags: []
+tags:
+- LG Aimers
 title: Introduction to Machine Learning
 toc: true
 ---
