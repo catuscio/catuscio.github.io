@@ -41,37 +41,44 @@ class NotionToJekyll:
 
         try:
             if block_type == "paragraph":
-                text = self.convert_rich_text(block["paragraph"]["rich_text"])
+                content = self.convert_rich_text(block["paragraph"]["rich_text"])
+                text = f"{content}\n\n" if content else "\n"
+
             elif block_type == "heading_1":
-                text = f"\n# {self.convert_rich_text(block['heading_1']['rich_text'])}\n"
+                text = f"# {self.convert_rich_text(block['heading_1']['rich_text'])}\n\n"
+
             elif block_type == "heading_2":
-                text = f"\n## {self.convert_rich_text(block['heading_2']['rich_text'])}\n"
+                text = f"## {self.convert_rich_text(block['heading_2']['rich_text'])}\n\n"
+
             elif block_type == "heading_3":
-                text = f"\n### {self.convert_rich_text(block['heading_3']['rich_text'])}\n"
+                text = f"### {self.convert_rich_text(block['heading_3']['rich_text'])}\n\n"
+
             elif block_type == "bulleted_list_item":
-                text = f"- {self.convert_rich_text(block['bulleted_list_item']['rich_text'])}\n"
+                indent = "  " * block.get("indent", 0)  # 중첩 리스트 지원
+                text = f"{indent}- {self.convert_rich_text(block['bulleted_list_item']['rich_text'])}\n"
+
             elif block_type == "numbered_list_item":
-                text = f"1. {self.convert_rich_text(block['numbered_list_item']['rich_text'])}\n"
+                indent = "  " * block.get("indent", 0)  # 중첩 리스트 지원
+                text = f"{indent}1. {self.convert_rich_text(block['numbered_list_item']['rich_text'])}\n"
+
             elif block_type == "code":
                 language = block["code"]["language"]
                 code = self.convert_rich_text(block["code"]["rich_text"])
-                text = f"```{language}\n{code}\n```\n"
+                text = f"```{language}\n{code}\n```\n\n"
+
             elif block_type == "equation":
-                text = f"\\\\[{block['equation']['expression']}\\\\]\n"
+                expr = block['equation']['expression'].replace('\\', '\\\\')
+                text = f"$${expr}$$\n\n"
+
             elif block_type == "quote":
                 text = f"> {self.convert_rich_text(block['quote']['rich_text'])}\n\n"
+
             elif block_type == "callout":
-                # 아이콘(이모지) 가져오기
                 icon = block["callout"].get("icon", {})
-                emoji = ""
-                if icon and "emoji" in icon:
-                    emoji = icon["emoji"]
-
-                # 텍스트 내용 가져오기
+                emoji = icon.get("emoji", "💡") if icon else "💡"
                 callout_text = self.convert_rich_text(block["callout"]["rich_text"])
+                text = f"<div class='notice notice--info' markdown='1'>\n{emoji} {callout_text}\n</div>\n\n"
 
-                # 콜아웃 형식으로 변환
-                text = f"> {emoji} **Note**\n> {callout_text}\n\n"
             elif block_type == "image":
                 if block["image"]["type"] == "external":
                     url = block["image"]["external"]["url"]
@@ -85,30 +92,40 @@ class NotionToJekyll:
                 image_path = self.download_image(url, self.current_page_title)
                 if image_path:
                     text = f"![{caption}]({image_path})\n\n"
+
             else:
-                # 처리되지 않은 블록 타입의 경우 빈 문자열 반환
-                text = ""
                 print(f"Unhandled block type: {block_type}")
+                text = "\n"
 
         except Exception as e:
             print(f"Error processing block type {block_type}: {str(e)}")
-            text = ""
+            text = "\n"
 
-        return text if text else ""
+        return text
 
     def convert_rich_text(self, rich_text):
         """리치 텍스트를 마크다운으로 변환"""
+        if not rich_text:
+            return ""
+
         text = ""
         for rt in rich_text:
             content = rt["plain_text"]
-            if rt.get("annotations"):
-                if rt["annotations"]["bold"]:
-                    content = f"**{content}**"
-                if rt["annotations"]["italic"]:
-                    content = f"*{content}*"
-                if rt["annotations"]["code"]:
-                    content = f"`{content}`"
+            annotations = rt.get("annotations", {})
+
+            if annotations.get("bold"):
+                content = f"**{content}**"
+            if annotations.get("italic"):
+                content = f"*{content}*"
+            if annotations.get("strikethrough"):
+                content = f"~~{content}~~"
+            if annotations.get("code"):
+                content = f"`{content}`"
+            if annotations.get("underline"):
+                content = f"<u>{content}</u>"
+
             text += content
+
         return text
 
     def create_front_matter(self, page):
