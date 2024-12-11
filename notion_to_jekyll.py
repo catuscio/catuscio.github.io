@@ -35,6 +35,7 @@ class NotionToJekyll:
         return None
 
     def convert_block_to_markdown(self, block):
+        """노션 블록을 마크다운으로 변환"""
         block_type = block["type"]
         text = ""
     
@@ -43,58 +44,92 @@ class NotionToJekyll:
                 content = self.convert_rich_text(block["paragraph"]["rich_text"])
                 text = f"{content}\n\n" if content else "\n"
     
+            elif block_type == "heading_1":
+                text = f"# {self.convert_rich_text(block['heading_1']['rich_text'])}\n\n"
+    
+            elif block_type == "heading_2":
+                text = f"## {self.convert_rich_text(block['heading_2']['rich_text'])}\n\n"
+    
+            elif block_type == "heading_3":
+                text = f"### {self.convert_rich_text(block['heading_3']['rich_text'])}\n\n"
+    
             elif block_type == "bulleted_list_item":
-                level = block.get("indent", 0)
-                indent = "  " * level  # 2칸 들여쓰기
+                indent = "    " * block.get("indent", 0)
                 content = self.convert_rich_text(block['bulleted_list_item']['rich_text'])
                 text = f"{indent}- {content}\n"
-                
-                # 하위 항목 처리
+    
                 if block.get("has_children", False):
                     children = self.notion.blocks.children.list(block["id"])["results"]
                     for child in children:
                         text += self.convert_block_to_markdown(child)
     
+            elif block_type == "numbered_list_item":
+                indent = "    " * block.get("indent", 0)
+                content = self.convert_rich_text(block['numbered_list_item']['rich_text'])
+                text = f"{indent}1. {content}\n"
+    
+                if block.get("has_children", False):
+                    children = self.notion.blocks.children.list(block["id"])["results"]
+                    for child in children:
+                        text += self.convert_block_to_markdown(child)
+    
+            elif block_type == "code":
+                language = block["code"]["language"]
+                code = self.convert_rich_text(block["code"]["rich_text"])
+                text = f"```{language}\n{code}\n```\n\n"
+    
             elif block_type == "equation":
                 expr = block['equation']['expression']
-                # 수식 주변에 빈 줄 추가
-                text = f"\n$${expr}$$\n\n"
+                text = f"\[ {expr} \]\n\n"
+    
+            elif block_type == "quote":
+                text = f"> {self.convert_rich_text(block['quote']['rich_text'])}\n\n"
     
             elif block_type == "callout":
-                emoji = block["callout"].get("icon", {}).get("emoji", "💡")
-                content = self.convert_rich_text(block["callout"]["rich_text"])
-                # Bootstrap 스타일 알림으로 변환
-                text = f'<div class="alert alert-info" role="alert">\n{emoji} {content}\n</div>\n\n'
+                icon = block["callout"].get("icon", {})
+                emoji = ""
+                if icon and "emoji" in icon:
+                    emoji = icon["emoji"]
+    
+                callout_text = self.convert_rich_text(block["callout"]["rich_text"])
+                text = (
+                    f"<div class='callout'>\n"
+                    f"  <span class='callout-icon'>{emoji}</span>\n"
+                    f"  <span class='callout-text'>{callout_text}</span>\n"
+                    f"</div>\n\n"
+                )
     
             elif block_type == "image":
                 if block["image"]["type"] == "external":
                     url = block["image"]["external"]["url"]
                 else:
                     url = block["image"]["file"]["url"]
-                
+    
                 caption = ""
                 if "caption" in block["image"] and block["image"]["caption"]:
                     caption = self.convert_rich_text(block["image"]["caption"])
-                
+    
                 image_path = self.download_image(url, self.current_page_title)
                 if image_path:
                     if caption:
                         text = (
-                            '<figure class="image-caption">\n'
-                            f'  <img src="{image_path}" alt="{caption}">\n'
-                            f'  <figcaption>{caption}</figcaption>\n'
-                            '</figure>\n\n'
+                            f"<figure>\n"
+                            f"  <img src='{image_path}' alt='{caption}'>\n"
+                            f"  <figcaption>{caption}</figcaption>\n"
+                            f"</figure>\n\n"
                         )
                     else:
                         text = f"![{caption}]({image_path})\n\n"
     
-            # ... 나머지 블록 타입 처리 ...
+            else:
+                text = ""
+                print(f"Unhandled block type: {block_type}")
     
         except Exception as e:
             print(f"Error processing block type {block_type}: {str(e)}")
-            text = "\n"
+            text = ""
     
-        return text
+        return text if text else ""
 
     def convert_rich_text(self, rich_text):
         """리치 텍스트를 마크다운으로 변환"""

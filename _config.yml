@@ -65,6 +65,11 @@ plugins:
 paginate: 5  # amount of posts to show per page
 paginate_path: /page:num/
 
+markdown: kramdown
+kramdown:
+  math_engine: mathjax
+  parse_block_html: true
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
