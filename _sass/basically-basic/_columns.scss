@@ -1,0 +1,13 @@
+.column-list {
+    display: flex;
+    gap: 1em;
+    margin-bottom: 1em;
+}
+
+.column {
+    flex: 1;
+    padding: 1em;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}

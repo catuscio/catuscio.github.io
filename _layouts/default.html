@@ -28,6 +28,33 @@
           <span class="navicon"></span>
         </span>
       </button>
+
+      <!--다크모드-->
+      <button id="dark-mode-toggle" style="position: fixed; top: 1em; right: 1em; z-index: 1000;">
+        Toggle Dark Mode
+      </button>
+    
+      <script>
+        const toggleButton = document.getElementById('dark-mode-toggle');
+        const body = document.body;
+    
+        // 페이지 로드 시 로컬 스토리지에서 다크모드 상태 확인
+        if (localStorage.getItem('skin') === 'night') {
+            body.classList.add('night-mode');
+        }
+    
+        toggleButton.addEventListener('click', () => {
+            body.classList.toggle('night-mode');
+            if (body.classList.contains('night-mode')) {
+                localStorage.setItem('skin', 'night');
+            } else {
+                localStorage.setItem('skin', 'default');
+            }
+        });
+      </script>
+    
+      
+    
     </div>
 
     <div id="sidebar" class="sidebar">
@@ -54,5 +81,4 @@
     {% include scripts.html %}
 
   </body>
-
 </html>

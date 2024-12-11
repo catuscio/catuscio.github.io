@@ -1,0 +1,12 @@
+@charset "utf-8";
+
+// Theme skin
+@import url(//spoqa.github.io/spoqa-han-sans/css/SpoqaHanSansNeo.css);
+@import "basically-basic/themes/{{ site.data.theme.skin | default: 'default' }}";
+
+@import "basically-basic";
+
+@import "basically-basic/themes/default"; // 기본 스킨
+
+// 스킨 변경을 위해 아래 줄을 추가
+@import "basically-basic/themes/{{ site.data.theme.skin }}";

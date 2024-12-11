@@ -13,76 +13,23 @@
 
   <script>
     /* Cut the mustard */
-    if ( 'querySelector' in document && 'addEventListener' in window ) {
+    if ('querySelector' in document && 'addEventListener' in window) {
       document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + 'js';
     }
   </script>
 
+  <!-- 다크모드 스킨 적용 -->
+  {% assign skin = site.data.theme.skin %}
   <link rel="stylesheet" href="{{ '/assets/stylesheets/main.css' | relative_url }}">
+
+
+  <link rel="stylesheet" href="{{ '/assets/stylesheets/main.css' | relative_url }}">
+
   {% if site.data.theme.google_fonts %}
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={% for font in site.data.theme.google_fonts %}{{ font.name | replace: ' ', '+' }}{% if font.weights %}:{% endif %}{{ font.weights | remove: ' ' }}{% if forloop.last != true %}|{% endif %}{% endfor %}">
   {% endif %}
 
-  {% if site.plugins contains 'jekyll-feed' or site.gems contains 'jekyll-feed'%}
+  {% if site.plugins contains 'jekyll-feed' or site.gems contains 'jekyll-feed' %}
     {% include head-feed.html %}
   {% endif %}
-
-  <!-- MathJax Configuration -->
-  <script>
-    window.MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [['$$', '$$'], ['\\[', '\\]']],
-        processEscapes: true,
-        processEnvironments: true,
-        tags: 'ams'
-      },
-      options: {
-        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
-      },
-      startup: {
-        pageReady: () => {
-          return MathJax.startup.defaultPageReady().then(() => {
-            console.log('MathJax initial typesetting complete');
-          });
-        }
-      }
-    };
-  </script>
-  <script type="text/javascript" id="MathJax-script" async
-    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-  </script>
-
-  <!-- Custom Styles -->
-  <style>
-    .callout {
-      background-color: #f8f9fa;
-      border-left: 4px solid #0366d6;
-      padding: 1rem;
-      margin: 1rem 0;
-    }
-    .callout-icon {
-      float: left;
-      margin-right: 0.5rem;
-      font-size: 1.2rem;
-    }
-    .callout-text {
-      display: block;
-      margin-left: 2rem;
-    }
-    figure {
-      text-align: center;
-      margin: 1.5rem 0;
-    }
-    figure img {
-      max-width: 100%;
-      height: auto;
-    }
-    figcaption {
-      font-size: 0.9rem;
-      color: #666;
-      margin-top: 0.5rem;
-      font-style: italic;
-    }
-  </style>
 </head>

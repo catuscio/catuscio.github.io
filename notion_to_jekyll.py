@@ -1,4 +1,6 @@
 import os
+import time
+import uuid
 from datetime import datetime
 from notion_client import Client
 import requests
@@ -18,60 +20,88 @@ class NotionToJekyll:
 
     def download_image(self, url, page_title):
         """이미지 다운로드 및 저장"""
-        # 포스트 제목으로 단일 폴더명을 생성
-        folder_name = page_title.replace(" ", "_").lower()
+        # 첫 번째 태그를 파일명에 포함
+        tag_label = f"[{self.first_tag}]" if hasattr(self, 'first_tag') else ""
+
+        # 포스트 제목과 태그로 폴더명 생성
+        folder_name = f"{tag_label}-{page_title}".replace(" ", "_").replace("/", "_").lower()
+        folder_name = re.sub(r'[^a-z0-9_\-]', '', folder_name)  # 불필요한 문자 제거
+
         image_folder = self.image_dir / folder_name
         image_folder.mkdir(parents=True, exist_ok=True)
 
-        # 이미지 파일명 생성
-        filename = f"image_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+        # 이미지 파일명에 UUID 추가
+        unique_id = uuid.uuid4().hex
+        filename = f"image_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{unique_id}.png"
         image_path = image_folder / filename
 
-        response = requests.get(url)
-        if response.status_code == 200:
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
             with open(image_path, 'wb') as f:
                 f.write(response.content)
+            time.sleep(0.5)  # API 요청 제한 방지를 위한 지연
+            print(f"Image downloaded: {image_path}")
             return f"/assets/images/{folder_name}/{filename}"
-        return None
+        except Exception as e:
+            print(f"Failed to download image: {url} - {e}")
+            return None
 
-    def convert_block_to_markdown(self, block):
+    def convert_block_to_markdown(self, block, indent_level=0):
         """노션 블록을 마크다운으로 변환"""
         block_type = block["type"]
         text = ""
     
         try:
-            if block_type == "paragraph":
+            indent = '    ' * indent_level  # 현재 들여쓰기 레벨 적용
+
+            if block_type == "column_list":
+                columns = self.notion.blocks.children.list(block["id"])["results"]
+                text = "<div class='column-list' style='display: flex; gap: 1em;'>\n"
+                for column in columns:
+                    text += self.convert_block_to_markdown(column, indent_level + 1)
+                text += "</div>\n\n"
+
+            elif block_type == "column":
+                children = self.notion.blocks.children.list(block["id"])["results"]
+                text = "<div class='column' style='flex: 1; padding: 0.5em; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px;'>\n"
+                for child in children:
+                    text += self.convert_block_to_markdown(child, indent_level + 1)
+                text += "</div>\n"
+
+            elif block_type == "paragraph":
                 content = self.convert_rich_text(block["paragraph"]["rich_text"])
                 text = f"{content}\n\n" if content else "\n"
     
             elif block_type == "heading_1":
-                text = f"# {self.convert_rich_text(block['heading_1']['rich_text'])}\n\n"
+                text = f"\n# {self.convert_rich_text(block['heading_1']['rich_text'])}\n\n"
     
             elif block_type == "heading_2":
-                text = f"## {self.convert_rich_text(block['heading_2']['rich_text'])}\n\n"
+                text = f"\n## {self.convert_rich_text(block['heading_2']['rich_text'])}\n\n"
     
             elif block_type == "heading_3":
-                text = f"### {self.convert_rich_text(block['heading_3']['rich_text'])}\n\n"
+                text = f"\n### {self.convert_rich_text(block['heading_3']['rich_text'])}\n\n"
     
             elif block_type == "bulleted_list_item":
-                indent = "    " * block.get("indent", 0)
                 content = self.convert_rich_text(block['bulleted_list_item']['rich_text'])
                 text = f"{indent}- {content}\n"
-    
+
+                # 하위 항목이 있는 경우 재귀 호출
                 if block.get("has_children", False):
                     children = self.notion.blocks.children.list(block["id"])["results"]
                     for child in children:
-                        text += self.convert_block_to_markdown(child)
-    
+                        text += self.convert_block_to_markdown(child, indent_level + 1)
+
+
             elif block_type == "numbered_list_item":
-                indent = "    " * block.get("indent", 0)
                 content = self.convert_rich_text(block['numbered_list_item']['rich_text'])
                 text = f"{indent}1. {content}\n"
-    
+
+                # 하위 항목이 있는 경우 재귀 호출
                 if block.get("has_children", False):
                     children = self.notion.blocks.children.list(block["id"])["results"]
                     for child in children:
-                        text += self.convert_block_to_markdown(child)
+                        text += self.convert_block_to_markdown(child, indent_level + 1)
     
             elif block_type == "code":
                 language = block["code"]["language"]
@@ -80,7 +110,7 @@ class NotionToJekyll:
     
             elif block_type == "equation":
                 expr = block['equation']['expression']
-                text = f"\[ {expr} \]\n\n"
+                text = f"$${expr}$$\n\n"
     
             elif block_type == "quote":
                 text = f"> {self.convert_rich_text(block['quote']['rich_text'])}\n\n"
@@ -90,13 +120,10 @@ class NotionToJekyll:
                 emoji = ""
                 if icon and "emoji" in icon:
                     emoji = icon["emoji"]
-    
+
                 callout_text = self.convert_rich_text(block["callout"]["rich_text"])
                 text = (
-                    f"<div class='callout'>\n"
-                    f"  <span class='callout-icon'>{emoji}</span>\n"
-                    f"  <span class='callout-text'>{callout_text}</span>\n"
-                    f"</div>\n\n"
+                    f"{indent}> {emoji} {callout_text}\n\n"
                 )
     
             elif block_type == "image":
@@ -104,23 +131,23 @@ class NotionToJekyll:
                     url = block["image"]["external"]["url"]
                 else:
                     url = block["image"]["file"]["url"]
-    
+
                 caption = ""
                 if "caption" in block["image"] and block["image"]["caption"]:
                     caption = self.convert_rich_text(block["image"]["caption"])
-    
+                    # 캡션의 줄바꿈을 <br>로 변환
+                    caption = caption.replace("\n", "<br>")
+
                 image_path = self.download_image(url, self.current_page_title)
                 if image_path:
                     if caption:
-                        text = (
-                            f"<figure>\n"
-                            f"  <img src='{image_path}' alt='{caption}'>\n"
-                            f"  <figcaption>{caption}</figcaption>\n"
-                            f"</figure>\n\n"
-                        )
+                        text = f"![]({image_path})\n\n>*{caption}*\n\n"
                     else:
-                        text = f"![{caption}]({image_path})\n\n"
+                        text = f"![]({image_path})\n\n"
     
+            elif block_type == "divider":
+                text = f"{indent}---\n\n"  # 마크다운 구분선 추가
+
             else:
                 text = ""
                 print(f"Unhandled block type: {block_type}")
@@ -142,7 +169,7 @@ class NotionToJekyll:
 
             # 수식 처리 개선
             if rt.get("type") == "equation":
-                content = f"\\({content}\\)"
+                content = f"$${content}$$"
             else:
                 annotations = rt.get("annotations", {})
                 if annotations.get("bold"):
@@ -171,9 +198,13 @@ class NotionToJekyll:
         # 입력값을 리스트로 변환
         categories = [cat.strip() for cat in categories_input.split(",") if cat.strip()]
         tags = [tag.strip() for tag in tags_input.split(",") if tag.strip()]
+
+        # 첫 번째 태그 추출
+        self.first_tag = tags[0] if tags else "General"
+        post_head_tag = "[" + self.first_tag + "] "
         
         front_matter = {
-            "title": title,
+            "title": post_head_tag + title,
             "date": datetime.now().strftime("%Y-%m-%d"),
             "categories": categories if categories else ["개발"],  # 기본값 설정
             "tags": tags,
@@ -192,19 +223,36 @@ class NotionToJekyll:
         content = f"---\n{self.create_front_matter(page)}---\n\n"
 
         for block in blocks["results"]:
-            content += self.convert_block_to_markdown(block)
+            content += self.convert_block_to_markdown(block, indent_level=0)
 
+        # 첫 번째 태그를 제목에 추가
+        tag_label = f"[{self.first_tag}]"
         title_slug = re.sub(r'[^a-z0-9]+', '-', self.current_page_title.lower())
-        filename = f"{datetime.now().strftime('%Y-%m-%d')}-{title_slug}.md"
+        filename = f"{datetime.now().strftime('%Y-%m-%d')}-{tag_label}-{title_slug}.md"
 
         with open(self.posts_dir / filename, 'w', encoding='utf-8') as f:
             f.write(content)
 
         return filename
 
+def extract_page_id_from_url(url):
+    """노션 링크에서 페이지 ID 추출"""
+    match = re.search(r"([a-f0-9]{32})", url)
+    if match:
+        return match.group(1)
+    else:
+        raise ValueError("Invalid Notion URL. Could not extract page ID.")
+    
 def main():
     notion_token = "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"  # 여기에 실제 토큰을 입력하세요
-    page_id = str(input("Type Page ID: "))
+    notion_url = input("Enter Notion page URL: ").strip()
+
+    try:
+        page_id = extract_page_id_from_url(notion_url)
+        print(f"Extracted Page ID: {page_id}")
+    except ValueError as e:
+        print(e)
+        return
     
     converter = NotionToJekyll(notion_token)
     filename = converter.convert_page(page_id)
