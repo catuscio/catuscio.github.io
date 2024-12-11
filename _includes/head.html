@@ -18,11 +18,7 @@
     }
   </script>
 
-  <!-- 다크모드 스킨 적용 -->
-  {% assign skin = site.data.theme.skin %}
-  <link rel="stylesheet" href="{{ '/assets/stylesheets/main.css' | relative_url }}">
-
-
+  <!-- 메인 스타일시트 -->
   <link rel="stylesheet" href="{{ '/assets/stylesheets/main.css' | relative_url }}">
 
   {% if site.data.theme.google_fonts %}
@@ -32,4 +28,30 @@
   {% if site.plugins contains 'jekyll-feed' or site.gems contains 'jekyll-feed' %}
     {% include head-feed.html %}
   {% endif %}
+
+  <!-- MathJax Configuration -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true,
+        processEnvironments: true,
+        tags: 'ams'
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      },
+      startup: {
+        pageReady: () => {
+          return MathJax.startup.defaultPageReady().then(() => {
+            console.log('MathJax initial typesetting complete');
+          });
+        }
+      }
+    };
+  </script>
+  <script type="text/javascript" id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
 </head>

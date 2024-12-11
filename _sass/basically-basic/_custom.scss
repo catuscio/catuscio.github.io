@@ -1,15 +1,229 @@
-/* 기본 라이트 모드 스타일 */
-body {
-    background-color: #ffffff;
-    color: #000000;
-}
-
-/* 다크모드 스타일 */
+/* === 다크모드 기본 스타일 === */
 body.night-mode {
+    background-color: #1e1e1e !important;
+    color: #f5f5f5 !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  /* .wrapper 다크모드 스타일 */
+  body.night-mode .wrapper {
+    background-color: #1e1e1e !important;
+    color: #f5f5f5 !important;
+  }
+  
+  /* === 링크 스타일 === */
+  body.night-mode a {
+    color: #9ecaff !important;
+  }
+  
+  body.night-mode a:hover {
+    color: #b3d9ff !important;
+  }
+  
+  /* === 글 제목 스타일 === */
+  body.night-mode h1,
+  body.night-mode h2,
+  body.night-mode h3,
+  body.night-mode h4,
+  body.night-mode h5,
+  body.night-mode h6,
+  body.night-mode #sidebar h2,
+  body.night-mode #sidebar h3 {
+    color: #f5f5f5 !important;
+    border-bottom: none !important;
+  }
+  
+  body.night-mode h1 a,
+  body.night-mode h2 a,
+  body.night-mode h3 a,
+  body.night-mode h4 a,
+  body.night-mode h5 a,
+  body.night-mode h6 a {
+    color: #9ecaff !important;
+  }
+  
+  body.night-mode h1 a:hover,
+  body.night-mode h2 a:hover,
+  body.night-mode h3 a:hover,
+  body.night-mode h4 a:hover,
+  body.night-mode h5 a:hover,
+  body.night-mode h6 a:hover {
+    color: #b3d9ff !important;
+  }
+  
+  /* === 검색 버튼과 메뉴 버튼을 감싸는 박스 스타일 === */
+  body.night-mode .sidebar-toggle-wrapper {
+    background-color: #1e1e1e !important;
+    border: none !important;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5) !important;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  /* === 검색 버튼과 메뉴 버튼 스타일 === */
+  body.night-mode .search-toggle,
+  body.night-mode .navicon-button {
+    background-color: #1e1e1e !important;
+    color: #f5f5f5 !important;
+    border: none !important;
+    transition: background-color 0.3s ease;
+  }
+  
+  body.night-mode .search-toggle:hover,
+  body.night-mode .navicon-button:hover {
+    background-color: #2d2d2d !important;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.7) !important;
+  }
+  
+  /* === 버튼 아이콘 색상 변경 === */
+  body.night-mode .search-toggle .icon,
+  body.night-mode .navicon-button .navicon {
+    fill: #f5f5f5 !important;
+  }
+  
+  /* === 사이드바 스타일 === */
+  body.night-mode #sidebar,
+  body.night-mode #sidebar .inner {
+    background-color: #1e1e1e !important;
+    color: #f5f5f5 !important;
+    border-right: 1px solid #444 !important;
+  }
+  
+  body.night-mode #sidebar a {
+    color: #9ecaff !important;
+  }
+  
+  body.night-mode #sidebar a:hover {
+    color: #b3d9ff !important;
+  }
+  
+  /* === 다크모드 토글 버튼 스타일 === */
+  #dark-mode-toggle {
+    background-color: #f5f5f5;
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+    position: fixed;
+    bottom: 1em;
+    right: 1em;
+    z-index: 1000;
+  }
+  
+  body.night-mode #dark-mode-toggle {
     background-color: #1e1e1e;
     color: #f5f5f5;
+  }
+  
+  #dark-mode-toggle:hover {
+    transform: scale(1.1);
+  }
+  
+  body.night-mode #dark-mode-toggle:hover {
+    background-color: #2d2d2d;
+  }
+  
+  /* === 메뉴 버튼과 화살표 버튼 스타일 === */
+  .navicon-button .navicon,
+  .navicon-button .navicon::before,
+  .navicon-button .navicon::after {
+    background-color: #000; /* 라이트 모드 색상 */
+  }
+  
+  body.night-mode .navicon-button .navicon,
+  body.night-mode .navicon-button .navicon::before,
+  body.night-mode .navicon-button .navicon::after {
+    background-color: #f5f5f5; /* 다크모드에서 밝은 색상 */
+  }
+  
+  /* 화살표 버튼 스타일 */
+  .navicon-button .arrow {
+    width: 24px;
+    height: 2px;
+    background-color: #000;
+    position: relative;
+    transform: rotate(-45deg);
+  }
+  
+  body.night-mode .navicon-button .arrow {
+    background-color: #f5f5f5;
+  }
+  
+  .navicon-button .arrow::before {
+    content: '';
+    width: 24px;
+    height: 2px;
+    background-color: inherit;
+    position: absolute;
+    transform: rotate(90deg);
+  }
+  
+/* 다크모드에서 모든 구분선과 테두리 제거 */
+body.night-mode hr,
+body.night-mode .post-list li,
+body.night-mode .post-item,
+body.night-mode .post-meta,
+body.night-mode .post-content,
+body.night-mode .post-title,
+body.night-mode .post-date,
+body.night-mode .post-header,
+body.night-mode .page-header,
+body.night-mode .entry-header {
+  border: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
 }
 
-body.night-mode a {
-    color: #9ecaff;
+/* 다크모드에서 포스트 항목 사이의 구분선 제거 */
+body.night-mode .post-list li,
+body.night-mode .post-item {
+  border-bottom: none !important;
 }
+
+/* 다크모드에서 제목과 메타데이터 사이의 구분선 제거 */
+body.night-mode .post-title,
+body.night-mode .post-meta {
+  border-bottom: none !important;
+}
+
+/* 다크모드에서 섹션 구분선 제거 */
+body.night-mode section,
+body.night-mode .content {
+  border-bottom: none !important;
+}
+
+/* 다크모드에서 마진 조정 (필요시) */
+body.night-mode .post-list li,
+body.night-mode .post-item {
+  margin-bottom: 1rem !important;
+}
+
+/* 다크모드에서 모든 요소의 border-bottom 제거 */
+body.night-mode * {
+    border-bottom: none !important;
+  }
+  
+  /* 다크모드에서 요소 간 margin-bottom 조정 */
+  body.night-mode .post,
+  body.night-mode .post-item,
+  body.night-mode .post-list li {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* 다크모드에서 box-shadow 제거 */
+  body.night-mode * {
+    box-shadow: none !important;
+  }
+  
+  /* 필요 시 콘텐츠 사이의 마진 조정 */
+  body.night-mode .post-item + .post-item {
+    margin-top: 1rem !important;
+  }
+  
