@@ -21,18 +21,22 @@
 title: Kiwii Dev
 email: catuscio@hotmail.com
 description: |
-  # 현재 Notion 글을 Blog로 이주 중에 있습니다.
   ## 무인이동체공학 전공생의 기술 블로그
   
+  ### 🥝 언어를 좋아하는 ML 엔지니어 키위입니다!
+
+  > 🚨 현재 Notion 글을 Blog로 이전하고 있습니다.
+
   인공지능 관련 학과에서 인공지능을 공부하고 있습니다.
   주로 다음과 같은 내용을 다룹니다.
   
-  - ML/DL 논문 리뷰
+  - 다양한 강의 필기 정리
   - 다양한 주제의 주요 컨셉 소개
+  - ML/DL 논문 리뷰
   - 프로젝트 Trouble Shooting
   - 머신러닝 엔지니어 취업 준비
 
-  </>
+  ---
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://catuscio.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 instagram_username: gyuu_minn
@@ -44,7 +48,7 @@ lang: ko
 timezone: Asia/Seoul
 author:
   name: Gyumin Choi
-  picture: "/assets/images/logo.jpg"
+  picture: "/assets/images/blog_profile.jpg"
 search: true
 # navigation:
 #   - title: About
