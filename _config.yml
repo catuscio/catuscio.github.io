@@ -48,7 +48,7 @@ lang: ko
 timezone: Asia/Seoul
 author:
   name: Gyumin Choi
-  picture: "/assets/images/blog_profile.jpg"
+  picture: /assets/images/blog_profile.jpg
 search: true
 # navigation:
 #   - title: About
